@@ -3,327 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>John's Security System</title>
+    <title>Sai Puneeth’s Contact Information</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --pastel-red: #ffdbdb;
-            --accent-green: #2ecc71;
-            --error-red: #e74c3c;
-            --warn-orange: #f39c12;
-            --deep-black: #0a0a0a;
+            --pastel-green: #f0fff0;
+            --pure-red: #ff4d4d;
+            --pastel-red: #ffdad9;
+            --locked-gray: #bdc3c7;
+            --button-color: #2ecc71;
+            --win-blue: #3498db;
+            --timer-red: #e74c3c;
         }
 
         body {
-            background-color: #f0fff0; 
+            background-color: var(--pastel-green);
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, sans-serif;
             overflow: hidden;
+            transition: background-color 1.5s ease;
         }
 
-        #landing-screen {
-            height: 100vh;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+        .screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; z-index: 10;
+            transition: opacity 1.5s ease;
         }
 
-        #main-card {
-            border: 5px dotted #2ecc71; 
-            background: white;
-            padding: 20px 25px; 
-            border-radius: 25px; 
-            width: 280px; 
-            min-height: 180px; 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 10px 10px 0px rgba(0,0,0,0.1);
-            color: #000;
-        }
+        .hidden { display: none !important; opacity: 0; }
 
-        #track-btn {
-            margin-top: 30px;
-            padding: 14px 28px;
-            background-color: #2ecc71;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 1rem;
-            color: #ffffff;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            animation: glow 1.5s infinite alternate ease-in-out;
-            width: fit-content; 
-        }
-
-        @keyframes glow {
-            from { box-shadow: 0 0 10px #2ecc71, 0 0 20px #2ecc71; }
-            to { box-shadow: 0 0 20px #2ecc71, 0 0 40px #2ecc71; transform: translateY(-2px); }
-        }
-
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; transition: all 1.2s ease; z-index: 10; }
-        .hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-
-        #enquiry-screen { background-color: var(--deep-black); flex-direction: column; color: #444; font-family: 'Courier New', Courier, monospace; }
-        .tracker-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        /* Welcome Card */
+        #main-card { border: 5px dotted #2ecc71; background: white; padding: 25px; border-radius: 25px; width: 280px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         
-        .node-wrapper {
-            width: 65px; height: 65px; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 26px; transition: 0.5s;
-            background: rgba(255,255,255,0.05); position: relative;
-        }
+        .btn-wrapper { position: relative; margin-top: 25px; min-height: 60px; }
 
-        .glow-red { background: rgba(231, 76, 60, 0.4); box-shadow: 0 0 25px var(--error-red); }
-        .glow-orange { background: rgba(243, 156, 18, 0.4); box-shadow: 0 0 25px var(--warn-orange); }
-        .glow-green { background: rgba(46, 204, 113, 0.3); box-shadow: 0 0 25px var(--accent-green); }
-
-        .line-box { width: 50px; height: 2px; background: #222; position: relative; overflow: hidden; }
-        .line-fill { width: 0%; height: 100%; background: var(--accent-green); position: absolute; }
-        
-        .line-orange-pulse { background: var(--warn-orange); animation: flicker 0.1s infinite; }
-        .line-red-pulse { background: var(--error-red); animation: flicker 0.1s infinite; }
-        @keyframes flicker { 0% { opacity: 0.4; } 100% { opacity: 1; } }
-
-        .terminal { height: 120px; width: 320px; text-align: center; font-size: 11px; color: #555; line-height: 1.6; }
-        .critical { color: var(--error-red); font-weight: bold; }
-        .warning { color: var(--warn-orange); font-weight: bold; }
-        .error-msg-down { margin-top: 15px; display: block; }
-
-        #last-loc-btn {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background-color: var(--error-red);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            opacity: 0;
+        .btn-glow {
+            position: relative; padding: 16px 35px; background-color: var(--button-color); border: none; border-radius: 50px;
+            cursor: pointer; font-weight: 800; color: white; text-transform: uppercase; z-index: 20;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); animation: glowPulse 2s infinite;
             transition: opacity 1.2s ease;
-            box-shadow: 0 0 15px var(--error-red);
-            animation: redPulse 1.5s infinite alternate;
+            opacity: 0; /* Starts hidden for the 5s delay */
         }
 
-        @keyframes redPulse {
-            from { box-shadow: 0 0 10px var(--error-red); transform: scale(1); }
-            to { box-shadow: 0 0 25px var(--error-red), 0 0 40px red; transform: scale(1.05); }
+        /* Shows after 5 seconds */
+        .btn-visible { opacity: 1; }
+
+        .btn-locked { 
+            background-color: var(--locked-gray) !important; 
+            cursor: not-allowed; 
+            animation: none !important; 
+            box-shadow: none !important; 
+            opacity: 1 !important; /* Always visible if locked */
         }
 
-        #main-content { 
-            background-color: var(--pastel-red);
-            background-image: radial-gradient(#ffbaba 1.5px, transparent 1.5px);
-            background-size: 25px 25px;
+        .expansion-layer {
+            position: absolute; top: 50%; left: 50%; width: 60px; height: 60px;
+            background-color: var(--button-color); border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 1.8s cubic-bezier(0.4, 0, 0.2, 1), background-color 1.8s ease;
+            z-index: 15; pointer-events: none;
+        }
+        .expansion-layer.active { transform: translate(-50%, -50%) scale(60); background-color: var(--pastel-green); }
+
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(46, 204, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
         }
 
-        .glass-card {
-            width: 300px; padding: 30px; border-radius: 40px;
-            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.7); text-align: center;
+        .slow-fade { opacity: 0; transition: opacity 1.5s ease, transform 1.5s ease; transform: translateY(10px); }
+        .slow-fade.visible { opacity: 1; transform: translateY(0); }
+
+        .popup-wrong {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 40px; border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 1000; animation: bigShake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+            border: 4px solid var(--pure-red);
         }
 
-        .reveal-item { opacity: 0; transform: translateY(10px); transition: all 0.8s ease; }
-        .reveal-item.show { opacity: 1; transform: translateY(0); }
-
-        .name-header { font-size: 34px; margin: 0; color: #4a1a1a; letter-spacing: -1.5px; font-family: sans-serif; font-weight: 800; }
-        
-        .time-container { margin: 15px 0; font-family: sans-serif; font-size: 12px; }
-        .last-updated-label { color: #888; text-transform: uppercase; }
-        
-        .time-val { 
-            color: var(--error-red); 
-            font-weight: 900; 
-            margin-left: 5px;
-            background: transparent;
-            text-shadow: 0 0 5px rgba(231, 76, 60, 0.6);
-            animation: redTextGlow 1.5s infinite alternate ease-in-out;
+        @keyframes bigShake {
+            10%, 90% { transform: translate(-50%, -50%) translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate(-50%, -50%) translate3d(8px, 0, 0); }
+            30%, 50%, 70% { transform: translate(-50%, -50%) translate3d(-10px, 0, 0); }
+            40%, 60% { transform: translate(-50%, -50%) translate3d(10px, 0, 0); }
         }
 
-        @keyframes redTextGlow {
-            from { text-shadow: 0 0 4px rgba(231, 76, 60, 0.5); }
-            to { text-shadow: 0 0 12px rgba(231, 76, 60, 0.9), 0 0 20px rgba(231, 76, 60, 0.4); }
-        }
+        .try-again-text { font-size: 0.8rem; color: #95a5a6; margin-top: 15px; font-weight: 500; }
+        .timer-display { color: var(--timer-red); font-weight: bold; }
 
-        .map-container {
-            width: 100%; height: 180px; margin: 20px 0; border-radius: 25px;
-            background-color: #fff; border: 1px solid rgba(255,255,255,0.8);
-            background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/bb/New_York_City_location_map.svg');
-            background-size: cover; background-position: center; position: relative;
-        }
+        .line-loader-container { width: 220px; height: 4px; background: rgba(46, 204, 113, 0.1); border-radius: 10px; overflow: hidden; position: relative; margin-top: 25px; }
+        .line-loader-fill { position: absolute; width: 35%; height: 100%; background: var(--button-color); animation: lineMove 2.5s infinite ease-in-out; }
+        @keyframes lineMove { 0% { left: -40%; } 100% { left: 100%; } }
 
-        .loc-pin { 
-            position: absolute; 
-            top: 45%; 
-            left: 52%; 
-            font-size: 24px; 
-            transform: translate(-50%, -100%);
-        }
-
-        .red-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background-color: var(--error-red);
-            border-radius: 50%;
-            margin-right: 8px;
-            vertical-align: middle;
-            box-shadow: 0 0 8px var(--error-red);
-            animation: dotFlicker 1s infinite alternate;
-        }
-
-        @keyframes dotFlicker {
-            from { opacity: 0.5; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1.2); box-shadow: 0 0 12px var(--error-red); }
-        }
-
-        .loc-footer { font-size: 19px; font-weight: 800; color: #4a1a1a; font-family: sans-serif; display: flex; align-items: center; justify-content: center; }
-
-        #fade-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--pastel-red); opacity:0; pointer-events:none; z-index:99; transition: opacity 1.5s ease; }
+        input[type="text"] { padding: 12px; border-radius: 12px; border: 2px solid #2ecc71; font-size: 16px; width: 220px; margin-bottom: 15px; outline: none; }
     </style>
 </head>
 <body>
 
-    <div id="landing-screen">
+    <div id="page-welcome" class="screen">
         <div id="main-card">
             <h1>Hi! I’m Sai Puneeth</h1>
-            <p>Thanks for checking on me! ✨<br>I’m often inactive on Instagram.<br>Call my number if it’s Urgent‼️</p>
+            <p>I’m often inactive on Instagram.<br>Call my number if it’s Urgent🚨</p>
         </div>
-        <button id="track-btn" onclick="startSystem()">
-            <svg viewBox="0 0 24 24" style="fill:white; width:18px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-            Track Location
-        </button>
+        <div class="btn-wrapper">
+            <div id="expander" class="expansion-layer"></div>
+            <button id="contact-btn" class="btn-glow" onclick="handleStartClick()">Contact Information</button>
+        </div>
+        <div id="start-lockout-msg" class="hidden">
+            <div class="try-again-text">Try again after</div>
+            <div id="start-timer" class="timer-display" style="font-size: 1.1rem; margin-top: 4px;"></div>
+        </div>
     </div>
 
-    <div id="fade-overlay"></div>
-
-    <div id="enquiry-screen" class="screen hidden">
-        <div class="tracker-row">
-            <div id="sat-box" class="node-wrapper">🛰️</div>
-            <div class="line-box"><div id="l1" class="line-fill"></div></div>
-            <div id="tow-box" class="node-wrapper">🗼</div>
-            <div class="line-box"><div id="l2" class="line-fill"></div></div>
-            <div id="pho-box" class="node-wrapper">📱</div>
+    <div id="page-question" class="screen hidden">
+        <h2 class="slow-fade" id="q-h2">What’s Sai Puneeth’s favorite colour?</h2>
+        <div class="slow-fade" id="q-in">
+            <input type="text" id="answer-input" placeholder="Type answer here..." oninput="updateSubmitBtn()">
         </div>
-        <div id="term" class="terminal">INITIATING SECURE UPLINK...</div>
-        <button id="last-loc-btn" onclick="showFinalPage()">Last Known Location</button>
+        <button id="submit-btn" class="btn-glow btn-locked slow-fade" style="margin-top:0;" onclick="checkAnswer()">Submit Answer</button>
     </div>
 
-    <div id="main-content" class="screen hidden">
-        <div class="glass-card">
-            <h1 class="name-header reveal-item" id="r-name">Sai Puneeth</h1>
-            <div class="map-container reveal-item" id="r-map">
-                <div class="loc-pin">📍</div>
-            </div>
-            <div class="loc-footer reveal-item" id="r-loc">
-                <span class="red-dot"></span> <span id="display-city">London, UK 🇬🇧</span>
-            </div>
-            <div class="time-container reveal-item" id="r-time">
-                <span class="last-updated-label">Last Updated:</span> <span class="time-val" id="display-time">1 month ago</span>
-            </div>
+    <div id="page-redirect" class="screen hidden">
+        <p style="font-size: 1.5rem; font-weight: 800; color: #27ae60; margin: 0;">Redirecting</p>
+        <div class="line-loader-container">
+            <div class="line-loader-fill"></div>
         </div>
+        <div style="font-size: 0.75rem; color: #7f8c8d; margin-top: 12px;">SEC: <span id="redir-sec">5.5</span></div>
+    </div>
+
+    <div id="page-lockout" class="screen hidden" style="background-color: var(--pastel-red);">
+        <h1 style="color: #c0392b; font-size: 2.5rem;">LOCKED OUT</h1>
+        <p style="color: #7f8c8d; font-weight: 600;">ACCESS DENIED FOR SECURITY</p>
+        <div id="lockout-timer-big" class="timer-display" style="font-size: 2.2rem; font-weight: 900; margin: 30px 0;"></div>
+        <p style="font-size: 0.8rem; color: #a94442; opacity: 0.6;">Auto-returning to home soon...</p>
     </div>
 
     <script>
-        // ================= CONFIGURATION (Change these) =================
-        const CURRENT_CITY = "Devanahalli,India🇮🇳";
-        const LAST_UPDATED = "3 months ago";
-        // ================================================================
+        const SNAPCHAT_LINK = "https://t.me/saipuneeth";
 
-        // Apply settings immediately
-        document.getElementById('display-city').innerText = CURRENT_CITY;
-        document.getElementById('display-time').innerText = LAST_UPDATED;
+        // Initial setup on load
+        window.onload = () => {
+            const btn = document.getElementById('contact-btn');
+            const lockout = getRemainingLockout();
 
-        setTimeout(() => { document.getElementById('track-btn').style.display = 'flex'; }, 15000); 
+            if (lockout > 0) {
+                // If locked, show grey button immediately
+                btn.classList.add('btn-locked', 'btn-visible');
+                document.getElementById('start-lockout-msg').classList.remove('hidden');
+                startGlobalTimer();
+            } else {
+                // If not locked, wait 5 seconds to show green button
+                setTimeout(() => {
+                    btn.classList.add('btn-visible');
+                }, 5000);
+            }
+        };
 
-        function startSystem() {
-            document.getElementById('landing-screen').style.display = 'none';
-            runTrace();
+        function showPage(pageId) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.style.opacity = "0");
+            setTimeout(() => {
+                screens.forEach(s => s.classList.add('hidden'));
+                const target = document.getElementById(pageId);
+                target.classList.remove('hidden');
+                setTimeout(() => target.style.opacity = "1", 50);
+            }, 800); 
         }
 
-        async function runTrace() {
-            document.getElementById('enquiry-screen').classList.remove('hidden');
-            const term = document.getElementById('term');
-            const l1 = document.getElementById('l1'), l2 = document.getElementById('l2');
-            const sBox = document.getElementById('sat-box'), tBox = document.getElementById('tow-box'), pBox = document.getElementById('pho-box');
-
-            sBox.classList.add('glow-green');
-            tBox.classList.add('glow-orange'); 
-            term.innerHTML = "SEARCHING FOR AVAILABLE SATELLITES...";
-            await fillLine(l1, 5000, 30);
-            
-            term.innerHTML = "<span class='warning'>SIGNAL WEAK: ATTENUATING BANDWIDTH...</span>";
-            await wait(4000);
-            
-            l1.classList.add('line-orange-pulse');
-            term.innerHTML = "<span class='critical'>ERROR: SPECTRUM JAMMING DETECTED</span><br>REROUTING VIA POLAR ORBIT...";
-            await wait(6000);
-            
-            l1.classList.remove('line-orange-pulse');
-            await fillLine(l1, 2000, 100);
-            tBox.classList.remove('glow-orange');
-            tBox.classList.add('glow-green'); 
-
-            term.innerHTML = "TOWER HANDSHAKE SUCCESSFUL.";
-            await wait(4000);
-            term.innerHTML = "TRIANGULATING BROADCAST AREA...";
-            await wait(6000);
-            
-            pBox.classList.add('glow-orange');
-            term.innerHTML = "PINGING IMEI: 3582010... NO RESPONSE.";
-            await fillLine(l2, 5000, 40);
-            
-            l2.classList.add('line-red-pulse');
-            term.innerHTML = "<span class='critical'>DEVICE FIREWALL ACTIVE</span><br>INJECTING BACKDOOR PACKETS...";
-            await wait(6000);
-            
-            term.innerHTML = "BYPASSING ENCRYPTION LAYER [2/3]...";
-            await fillLine(l2, 4000, 70);
-            
-            term.innerHTML = "<span class='warning'>WARNING: SIGNAL BOUNCING (VPN DETECTED)</span><br>DECODING REAL IP ADDRESS...";
-            await wait(5000);
-            
-            pBox.classList.remove('glow-orange');
-            pBox.classList.add('glow-red'); 
-            term.innerHTML = "<span class='critical error-msg-down'>Phone is Offline! Can't find the Current Location :(</span>";
-            
-            await wait(5000); 
-            const btn = document.getElementById('last-loc-btn');
-            btn.style.opacity = "1";
-            btn.style.pointerEvents = "auto";
+        function handleStartClick() {
+            if (getRemainingLockout() > 0) return;
+            const btn = document.getElementById('contact-btn');
+            const expander = document.getElementById('expander');
+            btn.style.opacity = "0";
+            expander.classList.add('active');
+            setTimeout(() => {
+                showPage('page-question');
+                setTimeout(() => document.getElementById('q-h2').classList.add('visible'), 200);
+                setTimeout(() => document.getElementById('q-in').classList.add('visible'), 600);
+                setTimeout(() => document.getElementById('submit-btn').classList.add('visible'), 1000);
+            }, 1200); 
         }
 
-        async function showFinalPage() {
-            document.getElementById('fade-overlay').style.opacity = "1";
-            await wait(1500);
-            document.getElementById('enquiry-screen').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            document.getElementById('fade-overlay').style.opacity = "0";
-            
-            await wait(800); document.getElementById('r-name').classList.add('show');
-            await wait(1200); document.getElementById('r-map').classList.add('show');
-            await wait(1000); document.getElementById('r-loc').classList.add('show');
-            await wait(1000); document.getElementById('r-time').classList.add('show');
+        function updateSubmitBtn() {
+            const btn = document.getElementById('submit-btn');
+            const val = document.getElementById('answer-input').value.trim();
+            btn.classList.toggle('btn-locked', val.length === 0);
         }
 
-        function fillLine(el, duration, targetWidth) {
-            return new Promise(res => {
-                el.style.transition = `width ${duration}ms linear`;
-                setTimeout(() => { el.style.width = targetWidth + "%"; }, 50);
-                setTimeout(res, duration);
-            });
+        function checkAnswer() {
+            const val = document.getElementById('answer-input').value.toLowerCase().trim();
+            const btn = document.getElementById('submit-btn');
+            if (!val || btn.classList.contains('btn-locked')) return;
+
+            if (val === "green") {
+                btn.innerText = "CORRECT! 🎉";
+                btn.classList.remove('btn-locked');
+                btn.style.backgroundColor = "#27ae60";
+                localStorage.removeItem('john_attempt_count');
+                confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+                setTimeout(() => { showPage('page-redirect'); startRedirectCounter(); }, 4000);
+            } else {
+                triggerWrongAnswer();
+            }
         }
-        function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function triggerWrongAnswer() {
+            const popup = document.createElement('div');
+            popup.className = 'popup-wrong';
+            popup.innerHTML = `<h1 style="color:var(--pure-red); margin:0;">WRONG ANSWER!</h1><p style="margin-top:10px; color:#666;">Security Lock Triggered</p>`;
+            document.body.appendChild(popup);
+
+            let attempts = parseInt(localStorage.getItem('john_attempt_count') || 0) + 1;
+            localStorage.setItem('john_attempt_count', attempts);
+
+            let duration;
+            const HOUR = 60 * 60 * 1000;
+            const DAY = 24 * HOUR;
+            const WEEK = 7 * DAY;
+            const MONTH = 30 * DAY;
+
+            if (attempts === 1) duration = 2 * HOUR;
+            else if (attempts === 2) duration = 2 * WEEK;
+            else if (attempts === 3) duration = 1 * MONTH;
+            else if (attempts === 4) duration = 2 * MONTH;
+            else duration = 3 * MONTH;
+
+            localStorage.setItem('john_lockout_time', Date.now() + duration);
+
+            setTimeout(() => {
+                popup.style.opacity = "0";
+                showPage('page-lockout');
+                startGlobalTimer();
+                setTimeout(() => { if(!document.getElementById('page-lockout').classList.contains('hidden')) location.reload(); }, 30000);
+            }, 2000);
+        }
+
+        function startRedirectCounter() {
+            let left = 5.5;
+            const interval = setInterval(() => {
+                left = Math.max(0, left - 0.1);
+                const el = document.getElementById('redir-sec');
+                if(el) el.innerText = left.toFixed(1);
+                if(left <= 0) { clearInterval(interval); window.location.href = SNAPCHAT_LINK; }
+            }, 100);
+        }
+
+        function getRemainingLockout() {
+            const unlock = localStorage.getItem('john_lockout_time');
+            return unlock ? unlock - Date.now() : 0;
+        }
+
+        function startGlobalTimer() {
+            function update() {
+                const diff = getRemainingLockout();
+                if (diff <= 0) { location.reload(); return; }
+                const d = Math.floor(diff / 86400000), h = Math.floor((diff % 86400000) / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
+                
+                [document.getElementById('start-timer'), document.getElementById('lockout-timer-big')].forEach(el => {
+                    if (el) el.innerText = `${d}D ${h}H ${m}M ${s}S`;
+                });
+                requestAnimationFrame(update);
+            }
+            update();
+        }
     </script>
 </body>
 </html>
