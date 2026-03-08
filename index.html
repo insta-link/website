@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tracking System</title>
+    <title>Location Tracking System</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --accent-green: #2ecc71;
             --error-red: #e74c3c;
             --warn-orange: #f39c12;
+            --warn-yellow: #f1c40f;
             --deep-black: #000000;
         }
 
@@ -17,9 +18,11 @@
 
         /* Stage 1: Ping */
         #landing-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 10; }
-        #ping-display { font-size: 13px; color: #00ff41; margin-bottom: 20px; }
-        #track-btn { padding: 16px 45px; background: #111; color: #333; border-radius: 50px; border: 1px solid #222; font-weight: bold; cursor: not-allowed; transition: 0.5s; text-transform: uppercase; }
-        #track-btn.ready { background: var(--accent-green); color: white; cursor: pointer; box-shadow: 0 0 20px var(--accent-green); border: none; }
+        #ping-display { font-size: 11px; font-weight: bold; margin-bottom: 5px; transition: color 0.5s; letter-spacing: 1px; min-height: 1.2em; }
+        #latency-display { font-size: 9px; color: #444; margin-bottom: 25px; text-transform: uppercase; }
+        
+        #track-btn { padding: 16px 45px; background: #333; color: #777; border-radius: 50px; border: 1px solid #444; font-weight: bold; cursor: not-allowed; transition: 0.5s; text-transform: uppercase; pointer-events: none; }
+        #track-btn.ready { background: var(--accent-green); color: white; cursor: pointer; box-shadow: 0 0 20px var(--accent-green); border: none; pointer-events: auto; }
 
         #grow-circle { position: fixed; top: 50%; left: 50%; width: 10px; height: 10px; background: var(--deep-black); border-radius: 50%; transform: translate(-50%, -50%) scale(0); transition: 1.2s; z-index: 100; pointer-events: none; }
 
@@ -40,7 +43,6 @@
         .glow-orange { background: rgba(243, 156, 18, 0.2); box-shadow: 0 0 35px var(--warn-orange); }
         .glow-red { background: rgba(231, 76, 60, 0.3); box-shadow: 0 0 45px var(--error-red); }
 
-        /* Pulsing effect for Active Tower */
         .pulse-active { animation: activePulse 2s infinite ease-in-out; }
         @keyframes activePulse {
             0% { box-shadow: 0 0 20px var(--accent-green); transform: scale(1); }
@@ -56,7 +58,6 @@
         .err-desc { color: #555; display: block; font-size: 10px; margin-top: 5px; min-height: 40px; }
         .countdown-timer { color: #888; margin-top: 12px; font-size: 10px; letter-spacing: 0.5px; }
 
-        /* Stage 3: Map */
         #main-content { background: #e8f5e9; color: black; }
         .glass-card { width: 88%; max-width: 340px; background: white; border-radius: 35px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
         #map { width: 100%; height: 180px; border-radius: 20px; margin: 15px 0; border: 1px solid #eee; }
@@ -67,7 +68,8 @@
 <body>
 
     <div id="landing-screen">
-        <div id="ping-display">TESTING CONNECTION...</div>
+        <div id="ping-display">checking internet connection...</div>
+        <div id="latency-display">LATENCY: --ms</div>
         <button id="track-btn">Track Location</button>
     </div>
     <div id="grow-circle"></div>
@@ -85,7 +87,7 @@
 
     <div id="main-content" class="screen">
         <div class="glass-card">
-            <h3 style="margin:0;">Sai Puneeth’s Location</h3>
+            <h3 style="margin:0;">Sai Puneeth's Location</h3>
             <div id="map"></div>
             <div class="footer-status">● ACTIVE LOCATION</div>
         </div>
@@ -93,33 +95,56 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // --- CONFIGURATION SETTINGS ---
         const targetLat = 51.5074;
         const targetLng = -0.1278;
         const zoomLevel = 15;
-        // ------------------------------
 
         if(!localStorage.getItem('weatherSeenAt')) localStorage.setItem('weatherSeenAt', Date.now());
 
-        let pCount = 0;
-        const pInt = setInterval(() => {
-            pCount++;
-            document.getElementById('ping-display').innerText = `LATENCY: ${Math.floor(Math.random()*30)+20}ms`;
-            if(pCount >= 15) {
-                clearInterval(pInt);
-                document.getElementById('ping-display').innerText = "CONNECTION READY";
-                const btn = document.getElementById('track-btn');
-                btn.classList.add('ready');
-                btn.onclick = () => {
-                    document.getElementById('grow-circle').style.transform = "translate(-50%, -50%) scale(500)";
-                    setTimeout(() => {
-                        document.getElementById('landing-screen').style.display = 'none';
-                        document.getElementById('enquiry-screen').style.display = 'flex';
-                        processFlow();
-                    }, 1000);
-                };
-            }
-        }, 1000);
+        const pingEl = document.getElementById('ping-display');
+        const latEl = document.getElementById('latency-display');
+        
+        function startLandingSequence() {
+            let elapsed = 0;
+            const totalDuration = 15000;
+            const interval = 1000;
+
+            const landingInt = setInterval(() => {
+                elapsed += interval;
+                
+                const currentLat = Math.floor(Math.random() * 20) + 25;
+                latEl.innerText = `LATENCY: ${currentLat}ms`;
+
+                // Color Transition: Red -> Orange -> Yellow -> Green
+                if(elapsed <= 4000) {
+                    pingEl.style.color = "var(--error-red)";
+                } else if (elapsed <= 8000) {
+                    pingEl.style.color = "var(--warn-orange)";
+                } else if (elapsed < 15000) {
+                    pingEl.style.color = "var(--warn-yellow)";
+                }
+
+                if(elapsed >= totalDuration) {
+                    clearInterval(landingInt);
+                    pingEl.innerText = "INTERNET CONNECTION IS STABLE!";
+                    pingEl.style.color = "var(--accent-green)";
+                    latEl.innerText = "LATENCY: 22ms";
+                    
+                    const btn = document.getElementById('track-btn');
+                    btn.classList.add('ready');
+                    btn.onclick = () => {
+                        document.getElementById('grow-circle').style.transform = "translate(-50%, -50%) scale(500)";
+                        setTimeout(() => {
+                            document.getElementById('landing-screen').style.display = 'none';
+                            document.getElementById('enquiry-screen').style.display = 'flex';
+                            processFlow();
+                        }, 1000);
+                    };
+                }
+            }, interval);
+        }
+
+        startLandingSequence();
 
         async function typeText(el, text, speed = 40) {
             el.innerHTML = "";
